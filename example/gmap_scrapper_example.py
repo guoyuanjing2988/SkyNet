@@ -3,13 +3,19 @@ sys.path.append('../')
 
 import multiprocessing
 import logging
+import numpy as np
 import os
 from time import time
 from queue import Queue
+from skynet.scraper.gmap_generator import generate_radial
 from skynet.scraper.gmap_scraper import GoogleMapScraper
 from skynet.scraper.gmap_thread import GmapWorker
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG, format='%(threadName)s %(message)s')
+
 DIRECTORY = '../data'
+NUM_SCRAPER = 10
 NUM_WORKER = multiprocessing.cpu_count()
 
 if not os.path.exists(DIRECTORY):
@@ -17,11 +23,19 @@ if not os.path.exists(DIRECTORY):
 
 ts = time()
 
-gms = [GoogleMapScraper(1.3403, 103.9629, DIRECTORY),
-       GoogleMapScraper(25.204849, 55.270783, DIRECTORY),
-       GoogleMapScraper(20.593684, 78.96288, DIRECTORY),
-       GoogleMapScraper(20.617100, 78.931897, DIRECTORY),
-       GoogleMapScraper(12.839045, 30.203251, DIRECTORY)]
+# Singapore
+sg_coordinates = generate_radial(NUM_SCRAPER, 1.290270, 103.851959, 1000)
+
+# US New York
+ny_coordinates = generate_radial(NUM_SCRAPER, 40.730610, -73.935242, 1000)
+
+# US Kentucky
+ky_coordinates = generate_radial(NUM_SCRAPER, 38.047989, -84.501640, 1000)
+
+# Brazil Sao Paulo
+br_coordinates = generate_radial(NUM_SCRAPER, -23.533773, -46.625290, 1000)
+
+places = [sg_coordinates, ny_coordinates, ky_coordinates, br_coordinates]
 
 queue = Queue()
 
@@ -30,8 +44,11 @@ for i in range(NUM_WORKER):
     worker.daemon = True
     worker.start()
 
-for scraper in gms:
-    queue.put(scraper)
+for coordinates in places:
+    for index, (lat, lng) in enumerate(coordinates):
+        logger.info('Queueing %s GoogleMapScraper out of %s', index, NUM_SCRAPER)
+        queue.put(GoogleMapScraper(lat, lng, DIRECTORY))
 
 queue.join()
+
 print("Time taken: {}".format(time() - ts))
