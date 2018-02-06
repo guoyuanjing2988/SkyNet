@@ -1,6 +1,7 @@
 import sys
 sys.path.append('../')
 
+import multiprocessing
 import logging
 import os
 from time import time
@@ -9,7 +10,7 @@ from skynet.scraper.gmap_scraper import GoogleMapScraper
 from skynet.scraper.gmap_thread import GmapWorker
 
 DIRECTORY = '../data'
-NUM_WORKER = 2
+NUM_WORKER = multiprocessing.cpu_count()
 
 if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)
