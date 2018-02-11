@@ -4,18 +4,18 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-def encoder(x):
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
-                                   biases['encoder_b1']))
+def autoencoder(x, weights, biases):
 
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']),
-                                   biases['encoder_b2']))
-    return layer_2
+    if (len(weights) != len(biases)):
+        raise AssertionError("Number of Weights must be equal to the number of biases")
 
-def decoder(x):
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
-                                   biases['decoder_b1']))
+    layers = []
+    count = 0
 
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']),
-                                   biases['decoder_b2']))
-    return layer_2
+    for weight, biase in zip(weights, biases):
+        if count == 0:
+            layers.append(tf.nn.sigmoid(tf.add(tf.matmul(x, weight), biase)))
+        else:
+            layers.append(tf.nn.sigmoid(tf.add(tf.matmul(layers[count - 1], weight), biase)))
+        count += 1
+    return layers[-1]

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class GoogleMapScraper:
 
-    def __init__(self, lat, lng, directory, width=640, height=400, zoom=18, api_key='AIzaSyDP3-YvP9o7xTc31H0NfOSXC7cXtaNFatk'):
+    def __init__(self, lat, lng, directory, width=300, height=300, zoom=18, api_key='AIzaSyDP3-YvP9o7xTc31H0NfOSXC7cXtaNFatk'):
         self._lat = lat
         self._lng = lng
         self._width = width
