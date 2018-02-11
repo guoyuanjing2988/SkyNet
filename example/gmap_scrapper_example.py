@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(threadName)s %(message)s')
 
 DIRECTORY = '../data'
-NUM_SCRAPER = 100
+NUM_SCRAPER = 1000
 NUM_WORKER = multiprocessing.cpu_count()
 
 if not os.path.exists(DIRECTORY):

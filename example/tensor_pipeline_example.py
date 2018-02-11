@@ -51,16 +51,15 @@ test_image = tf.image.decode_png(file_content, channels=CHANNEL)
 train_image = tf.reshape(train_image, [DIMENSIONS, 1])
 test_image = tf.reshape(test_image, [DIMENSIONS, 1])
 
-BATCH_SIZE = 30
+BATCH_SIZE = 100
 train_image_batch = tf.train.batch([train_image], batch_size=BATCH_SIZE)
 test_image_batch = tf.train.batch([test_image], batch_size=BATCH_SIZE)
 
 # Autoencoder
 learning_rate = 0.01
-num_steps = 500
+num_steps = 5000
 
 display_step = 100
-examples_to_show = 10
 
 num_input = DIMENSIONS
 num_hidden_1 = 1024
@@ -105,6 +104,8 @@ y_true = X
 loss = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
 optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(loss)
 
+saver = tf.train.Saver()
+
 init = tf.global_variables_initializer()
 
 with tf.Session() as sess:
@@ -120,24 +121,8 @@ with tf.Session() as sess:
         if i % display_step == 0 or i == 1:
             print('Step %i: Minibatch Loss: %f' %(i, l))
 
-    # test_data = img_df.loc[399:,'Vector'].values
-    # g = sess.run(decoder_op, feed_dict={X: test_data})
-    #
-    # canvas_orig = np.empty((640, 400, 3))
-    # canvas_recon = np.empty((640, 400, 3))
-    #
-    # canvas_orig = test_data[0].reshape([640, 400, 3])
-    # canvas_recon = g[0].reshape([640, 400, 3])
-    #
-    # print("Original Images")
-    # plt.figure(figsize=(640, 400))
-    # plt.imshow(canvas_orig)
-    # plt.show()
-    #
-    # print("Reconstructed Images")
-    # plt.figure(figsize=(640, 400))
-    # plt.imshow(canvas_recon)
-    # plt.show()
+    save_path = saver.save(sess, "/tmp/model.ckpt")
+    print("Model saved in path: %s" % save_path)
 
     coord.request_stop()
     coord.join(threads)
