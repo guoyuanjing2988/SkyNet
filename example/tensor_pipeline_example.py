@@ -84,15 +84,15 @@ encoder_biases = [
 ]
 
 decoder_weights = [
-    tf.Variable(tf.random_normal([num_hidden_4, num_hidden_3)),
+    tf.Variable(tf.random_normal([num_hidden_4, num_hidden_3])),
     tf.Variable(tf.random_normal([num_hidden_3, num_hidden_2])),
     tf.Variable(tf.random_normal([num_hidden_2, num_hidden_1])),
     tf.Variable(tf.random_normal([num_hidden_1, num_input]))
 ]
 
 decoder_biases = [
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_3]))
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_2]))
+    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_3])),
+    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_2])),
     tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_1])),
     tf.Variable(tf.random_normal([BATCH_SIZE, num_input]))
 ]
