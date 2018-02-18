@@ -10,12 +10,14 @@ import pandas as pd
 from PIL import Image
 
 def get_images(directory, flatten=True):
-
     img_dict = {}
-
     for f in listdir(directory):
         img_dict[f] = np.array(Image.open(join(directory, f)).convert('RGB')).ravel()
 
     img_df = pd.DataFrame(list(img_dict.items()), columns=['Image', 'Vector'])
-
     return img_df
+
+def plot_image(image, shape=(300, 300, 3)):
+    plt.imshow(image.reshape(shape), interpolation="nearest")
+    plt.axis("off")
+    plt.show()

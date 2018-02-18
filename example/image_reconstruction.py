@@ -57,55 +57,67 @@ test_image_batch = tf.train.batch([test_image], batch_size=BATCH_SIZE)
 
 # Autoencoder
 learning_rate = 0.01
+l2_reg = 0.0001
 num_steps = 5000
 
 display_step = 100
 
-num_input = DIMENSIONS
+num_inputs = DIMENSIONS
 num_hidden_1 = 1024
 num_hidden_2 = 512
 num_hidden_3 = 256
 num_hidden_4 = 128
+num_hidden_5 = num_hidden_3
+num_hidden_6 = num_hidden_2
+num_hidden_7 = num_hidden_1
+num_hidden_8 = num_inputs
 
 
-encoder_weights = [
-    tf.Variable(tf.random_normal([num_input, num_hidden_1])),
-    tf.Variable(tf.random_normal([num_hidden_1, num_hidden_2])),
-    tf.Variable(tf.random_normal([num_hidden_2, num_hidden_3])),
-    tf.Variable(tf.random_normal([num_hidden_3, num_hidden_4]))
-]
+activation = tf.nn.elu
+regularizer = tf.contrib.layers.l2_regularizer(l2_reg)
+initializer = tf.contrib.layers.variance_scaling_initializer()
 
-encoder_biases = [
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_1])),
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_2])),
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_3])),
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_4]))
-]
+X = tf.placeholder("float", [BATCH_SIZE, num_inputs])
 
-decoder_weights = [
-    tf.Variable(tf.random_normal([num_hidden_4, num_hidden_3])),
-    tf.Variable(tf.random_normal([num_hidden_3, num_hidden_2])),
-    tf.Variable(tf.random_normal([num_hidden_2, num_hidden_1])),
-    tf.Variable(tf.random_normal([num_hidden_1, num_input]))
-]
+weights1_init = initializer([num_inputs, num_hidden_1])
+weights2_init = initializer([num_hidden_1, num_hidden_2])
+weights3_init = initializer([num_hidden_2, num_hidden_3])
+weights4_init = initializer([num_hidden_3, num_hidden_4])
 
-decoder_biases = [
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_3])),
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_2])),
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_hidden_1])),
-    tf.Variable(tf.random_normal([BATCH_SIZE, num_input]))
-]
+weights1 = tf.Variable(weights1_init, dtype=tf.float32, name="weights1")
+weights2 = tf.Variable(weights2_init, dtype=tf.float32, name="weights2")
+weights3 = tf.Variable(weights3_init, dtype=tf.float32, name="weights3")
+weights4 = tf.Variable(weights4_init, dtype=tf.float32, name="weights4")
 
-X = tf.placeholder("float", [BATCH_SIZE, num_input])
-encoder_op = autoencoder(X, encoder_weights, encoder_biases)
-decoder_op = autoencoder(encoder_op, decoder_weights, decoder_biases)
-y_pred = decoder_op
-y_true = X
-loss = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
+weights5 = tf.transpose(weights4, name="weights5")
+weights6 = tf.transpose(weights3, name="weights6")
+weights7 = tf.transpose(weights2, name="weights7")
+weights8 = tf.transpose(weights1, name="weights8")
+
+biases1 = tf.Variable(tf.zeros(num_hidden_1), name="biases1")
+biases2 = tf.Variable(tf.zeros(num_hidden_2), name="biases2")
+biases3 = tf.Variable(tf.zeros(num_hidden_3), name="biases3")
+biases4 = tf.Variable(tf.zeros(num_hidden_4), name="biases4")
+biases5 = tf.Variable(tf.zeros(num_hidden_5), name="biases5")
+biases6 = tf.Variable(tf.zeros(num_hidden_6), name="biases6")
+biases7 = tf.Variable(tf.zeros(num_hidden_7), name="biases7")
+biases8 = tf.Variable(tf.zeros(num_hidden_8), name="biases8")
+
+hidden1 = activation(tf.matmul(X, weights1) + biases1)
+hidden2 = activation(tf.matmul(hidden1, weights2) + biases2)
+hidden3 = activation(tf.matmul(hidden2, weights3) + biases3)
+hidden4 = activation(tf.matmul(hidden3, weights4) + biases4)
+hidden5 = activation(tf.matmul(hidden4, weights5) + biases5)
+hidden6 = activation(tf.matmul(hidden5, weights6) + biases6)
+hidden7 = activation(tf.matmul(hidden6, weights7) + biases7)
+outputs = tf.matmul(hidden7, weights8) + biases8
+
+reconstruction_loss = tf.reduce_mean(tf.square(outputs - X))
+reg_loss = regularizer(weights1) + regularizer(weights2) + regularizer(weights3) + regularizer(weights4)
+loss = reconstruction_loss + reg_loss
 optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
 saver = tf.train.Saver()
-
 init = tf.global_variables_initializer()
 
 with tf.Session() as sess:
@@ -115,6 +127,7 @@ with tf.Session() as sess:
     threads = tf.train.start_queue_runners(coord=coord)
 
     for i in range(1, num_steps + 1):
+
         batch_x = np.reshape(sess.run(train_image_batch), (BATCH_SIZE, DIMENSIONS))
         _, l = sess.run([optimizer, loss], feed_dict={X : batch_x})
 
