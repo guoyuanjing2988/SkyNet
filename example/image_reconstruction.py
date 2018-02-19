@@ -58,7 +58,7 @@ test_image_batch = tf.train.batch([test_image], batch_size=BATCH_SIZE)
 # Autoencoder
 learning_rate = 0.01
 l2_reg = 0.0001
-num_steps = 5000
+num_steps = 500
 
 display_step = 100
 
@@ -133,6 +133,8 @@ with tf.Session() as sess:
 
         if i % display_step == 0 or i == 1:
             print('Step %i: Minibatch Loss: %f' %(i, l))
+            save_path = saver.save(sess, "/tmp/model" + str(i) +  ".ckpt")
+            print("Model saved in path: %s" % save_path)
 
     save_path = saver.save(sess, "/tmp/model.ckpt")
     print("Model saved in path: %s" % save_path)
